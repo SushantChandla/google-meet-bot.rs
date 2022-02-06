@@ -12,24 +12,29 @@ use tokio::{self};
 /// email = email@gmail.com
 /// password = password
 ///
-/// Run `cargo run`
+/// Run the project:
+/// Download the chrome driver from https://chromedriver.chromium.org/
+/// `chromedriver --port=4444`  
+/// `cargo run`
 
 const TOTAL_WINDOWS: u64 = 2;
+const MEET_LINK: &str = "https://meet.google.com/jce-syxe-nuo";
+const WAIT_SECONDS: u64 = 4;
 
 #[tokio::main]
 async fn main() {
     dotenv().ok();
-    let meet_link = "https://meet.google.com/jce-syxe-nuo".to_string();
+
     let mut tasks = vec![];
     for _i in 0..TOTAL_WINDOWS {
-        tasks.push(join_google_meet(&meet_link));
+        tasks.push(join_google_meet());
     }
     for i in join_all(tasks).await {
         i.unwrap()
     }
 }
 
-async fn join_google_meet(meet_link: &String) -> WebDriverResult<()> {
+async fn join_google_meet() -> WebDriverResult<()> {
     let mut caps = DesiredCapabilities::chrome();
     caps.add_chrome_arg("use-fake-ui-for-media-stream")?;
 
@@ -41,7 +46,7 @@ async fn join_google_meet(meet_link: &String) -> WebDriverResult<()> {
     }
     wait().await;
 
-    driver.get(meet_link).await?;
+    driver.get(MEET_LINK).await?;
 
     wait().await;
 
@@ -84,5 +89,5 @@ async fn google_login(driver: &WebDriver) -> WebDriverResult<()> {
 }
 
 async fn wait() {
-    sleep(Duration::new(5, 0)).await;
+    sleep(Duration::new(WAIT_SECONDS, 0)).await;
 }
